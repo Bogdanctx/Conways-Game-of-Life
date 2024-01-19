@@ -94,29 +94,34 @@ print_matrix: # (lines, columns, *matrix)
     ret
 
 # convert(hexa):
-# 0000 adresa
-# 0004 hexa
 convert:
+    pushl %ebp
+    movl %esp, %ebp
+
     xorl %eax, %eax
-    movl 4(%esp), %eax 
+    movl 8(%ebp), %eax 
     cmp $0x39, %eax
     jg from_letter
     subl $0x30, %eax
-    ret
+    jmp exit_convert
+
     from_letter:
         subl $0x37, %eax
+
+exit_convert:
+    popl %ebp
     ret
 
 # complete_matrix(lungime, &matrix_size, *matrix)
-# 0000 adr retur
-# 0004 lungime
-# 0008 matrix_size
-# 0012 matrix
 complete_matrix:
+    pushl %ebp
+    movl %esp, %ebp
+    pushl %ebx
+
     xorl %ecx, %ecx
-    movl 4(%esp), %eax
-    movl 8(%esp), %ebx
-    movl 12(%esp), %edi
+    movl 8(%ebp), %eax
+    movl 12(%ebp), %ebx
+    movl 16(%ebp), %edi
 
     movl 0(%ebx), %ebx
 
@@ -133,19 +138,21 @@ complete_matrix:
     cm_end_loop:
 
     movl %ebx, %eax
-    movl 8(%esp), %ebx
+    movl 12(%ebp), %ebx
     movl %eax, 0(%ebx)
+
+    popl %ebx
+    popl %ebp
     ret
 ###### END FUNC
 
 # take_8_bits(*puteri, *matrix, poz_start, &rezultat)
-# 0000 adr retur
-# 0004 puteri
-# 0008 matrix
-# 0012 poz_start
-# 0016 rezultat
 take_8_bits:
-    movl 12(%esp), %eax # poz_start
+    pushl %ebp
+    movl %esp, %ebp
+    pushl %ebx
+
+    movl 16(%ebp), %eax # poz_start
     xorl %edx, %edx
     movl $0, %ecx
 
@@ -153,13 +160,13 @@ take_8_bits:
         cmp $8, %edx
         je t8b_end_loop
 
-        movl 8(%esp), %edi # matrix
+        movl 12(%ebp), %edi # matrix
         movl (%edi, %eax, 4), %ebx
         cmp $0, %ebx
         je t8b_continue
 
         # daca ebx=1 atunci rezultat+=puteri[8-edx-1]
-        movl 4(%esp), %edi # puteri
+        movl 8(%ebp), %edi # puteri
         movl $8, %ebx
         subl %edx, %ebx
         decl %ebx
@@ -173,23 +180,25 @@ take_8_bits:
         jmp t8b_loop
     t8b_end_loop:
 
-    movl 16(%esp), %eax # rezultat
+    movl 20(%ebp), %eax # rezultat
     movl %ecx, 0(%eax)
 
+    popl %ebx
+    popl %ebp
     ret
 ####### END FUNC
 
 # getPositionInMatrix(line, column, totalColumns)
-# matrix[line][column] = line*totalColumns + column
-## stack:
-## 0004 | line
-## 0008 | column
-## 0012 | totalColumns
 getPositionInMatrix:
+    pushl %ebp
+    movl %esp, %ebp
+
     xorl %edx, %edx
-    movl 4(%esp), %eax
-    mull 12(%esp)
-    addl 8(%esp), %eax
+    movl 8(%ebp), %eax
+    mull 16(%ebp)
+    addl 12(%ebp), %eax
+
+    popl %ebp
     ret
 
 .global main
